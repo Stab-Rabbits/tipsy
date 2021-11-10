@@ -3,32 +3,59 @@ const bcrypt = require ('bcryptjs');
 
 const authController = {};
 
-/*_______THIS WAS NOT FULLY IMPLEMENTED, for some reason second query request isn't working.. Good luck!_______*/
-/*_______Moved the return next() to the second query_______*/
+/* 
+  Insert the username and the encrypted password into the user_login table. 
+  There's also a primary key that automatically generates in order to assoicated with each username.
 
-authController.createUser = async (req, res, next) => {
-    const { username, password, firstName, lastName, email } = req.body;
-    const encrypted = await bcrypt.hash(password, 10);
-    const queryAddUser = `INSERT INTO user_login (username, password) VALUES ($1, $2) RETURNING *`;
-    const addUserValues = [username, encrypted];
+  On a seperate table called users we'll be storing user's information (name, email and foreign key that references the user_login table)
 
-    try {
-      const response = await db.query(queryAddUser,addUserValues)
-      res.locals.userId = response.rows[0].user_id
-      const queryStr = `INSERT INTO users (user_id, first_name, last_name, email) VALUES ('${res.locals.userId}', '${firstName}', '${lastName}', '${email}')`
-      db.query(queryStr)
-      return next();
-    } catch (err){
-      console.log(`entered big "catch block" of createUser middleware`);
-      return next(err);
+  Response back to client/frontend with an object  
+    {
+      validated: boolean value,
+      message: 'Simple message',
+      userId: (user_id || null)
     }
-    
- 
+*/
+authController.createUser = async (req, res, next) => {
+  const { username, password, firstName, lastName, email } = req.body;
+  const encrypted = await bcrypt.hash(password, 10);
+  const queryAddUser = `INSERT INTO user_login (username, password) VALUES ($1, $2) RETURNING *`;
+  const addUserValues = [username, encrypted];
+  try {
+    const response = await db.query(queryAddUser,addUserValues)
+    const userId = response.rows[0].user_id
+    const queryStr = `INSERT INTO users (user_id, first_name, last_name, email) VALUES ('${userId}', '${firstName}', '${lastName}', '${email}')`
+    db.query(queryStr)
+    res.locals.userCreated = {
+      validated: true,
+      message: 'User sucessfully created',
+      userId: userId,
+    }
+    return next();
+  } catch (err){
+    if (err.code === '23505') {
+      res.locals.userCreated = {
+        validated: false,
+        message: 'Username already exist',
+        userId: null,
+      }
+      return next();
+    }
+    console.log(`entered big "catch block" of createUser middleware`);
+    return next(err);
+  }
+  
 };
 
-/*_______THIS WAS NOT FULLY IMPLEMENTED, it seems like db.query is running before bcrypt.hash finishes running, 
-but async or promise chaining is not working _______*/
-/*_______Instead of hashing the password, I use bcrypt.compare the stored pw vs the enter pw_______*/
+/* 
+  Search the database for username and than compare the password to the encrpyed password. 
+  Response back to client/frontend with an object  
+  {
+    validated: boolean value,
+    message: 'Simple message',
+    userId: (user_id || null)
+  }
+*/
 
 authController.verifyUser = async (req, res, next) => {
     try{
@@ -36,24 +63,34 @@ authController.verifyUser = async (req, res, next) => {
       const query = `SELECT * FROM user_login WHERE username = '${username}'`
       const resFromDB = await db.query(query)
       if (!resFromDB.rows.length){
-        res.status(404)
+        res.locals.userVerified= {
+          validated: false,
+          message: 'Unable to find username',
+          userId: null
+        }
         return next();
       }
       const user = resFromDB.rows[0]
+      console.log(user)
       const valid = await bcrypt.compare(password,user.password)
       if(!valid){
-        res.status(401)
+        res.locals.userVerified= {
+          validated: false,
+          message: 'Incorrect password, please try again.',
+          userId: null
+        }
         return next();
       } else {
-        res.status(200)
-        res.locals.userId = user.userId
+        res.locals.userVerified= {
+          validated: true,
+          message: 'User sucessfully validated',
+          userId: user.user_id
+        }
         return next();
       }
     } catch(err) {
-        //______________
-        console.log(`entered big "catch block" of verifyUser middleware`);
-        //______________
-        return next(err);
+      console.log(`entered big "catch block" of verifyUser middleware`);
+      return next(err);
     };
 };
 
