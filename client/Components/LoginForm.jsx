@@ -6,6 +6,8 @@ function LoginForm() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
+  let errorMessage; 
+
   // login is a post request
   const handleLogin = ((username, password) => {
     console.log(JSON.stringify({ username, password }));
@@ -16,9 +18,10 @@ function LoginForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     })
-    // .then(response => response.json())
+    .then(response => response.json())
     .then((data) => {
       // check response format... need conditional if user is authenticated
+      
 
       // if user is authenticated
         console.log('logged in')
@@ -31,6 +34,12 @@ function LoginForm() {
         // setMessage('Invalid username/password. Please try again.');
         // console.log('Invalid username/password');
     })
+      .catch(function(e) {
+        // set error message to render 
+        window.alert('Invalid Login');
+        console.error(e.message);
+        return e;
+})
   })
 
   return (
@@ -54,6 +63,8 @@ function LoginForm() {
             onChange={(event) => setPassword(event.target.value)}
           />
         </form>
+
+
       </div>
       <div>
         <button
@@ -65,6 +76,7 @@ function LoginForm() {
           Log in
         </button>
       </div>
+      {errorMessage}
       <div>
         <p>{message}</p>
       </div>
