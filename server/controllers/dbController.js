@@ -2,18 +2,34 @@ const db = require('../models/userModels');
 
 const dbControllers = {};
 
-dbControllers.getFaves = (req, res, next) => {
-  const queryStr = `SELECT name FROM cocktails c 
-  INNER JOIN faves f 
-  ON f.cocktail_id = c.cocktail_id
-  INNER JOIN users u 
-  ON u.user_id = f.user_id
-  WHERE u.user_id = $1`;
+/*
+  Expect user_id from the client/frontend in-order to search the faves database.
+  Response back to client/frontend with an object  
+  {
+    validated: boolean value,
+    message: 'Simple message',
+    data: list of favorite drinks
+  }
+*/
 
+dbControllers.getFaves = (req, res, next) => {
+  // const queryStr = `SELECT name FROM cocktails c 
+  // INNER JOIN faves f 
+  // ON f.cocktail_id = c.cocktail_id
+  // INNER JOIN users u 
+  // ON u.user_id = f.user_id
+  // WHERE u.user_id = $1`;
+
+  const queryStr = 'SELECT cocktail_id FROM faves WHERE user_id = $1'
   const values = [req.params.id];
+  console.log(req.params)
   db.query(queryStr, values)
     .then((data) => {
-      res.locals.faves = data.rows[0];
+      res.locals.faves = {
+        validated: true,
+        message: "Here're your favorite drinks",
+        data: data.rows,
+      }
       return next();
     })
     .catch((err) => {
@@ -25,6 +41,7 @@ dbControllers.getFaves = (req, res, next) => {
 };
 
 //findCocktail middleware will be followed by addFave middleware
+// WHAT IS THIS FOR???
 dbControllers.findCocktail = (req, res, next) => {
   const cocktailName = req.body.name;
   const queryStrLocateCocktailId = `
@@ -51,77 +68,65 @@ dbControllers.findCocktail = (req, res, next) => {
 //at the moment ying hasn't been able to find a better way to insert into many-to-many relationship tables (in this case, users + faves + cocktails)
 //as you could see below, there's some nested query happening.. also kind of verbose...
 
-dbControllers.addFave = (req, res, next) => {
-  if (res.locals.cocktailId) {
-    const favesKeys = ['user_id', 'cocktail_id'];
-    const favesValues = [req.params.id, res.locals.cocktailId];
-    const queryStrInsertFaves = `
-    INSERT INTO faves f ${favesKeys} 
-    VALUES($1, $2)
-    RETURNING *
-    `;
-    db.query(queryStrInsertFaves, favesValues)
-      .then((data) => {
-        res.locals.fave = data.rows[0];
-        return next();
-      })
-      .catch((err) => {
-        return next({
-          message: err.message,
-          log: 'error in addToFaves table part (the cocktail name already exists in the cocktails table)',
-        });
-      });
+/*
+  Expect user_id & cocktail_id from the client/frontend in-order insert to the faves database.
+  Response back to client/frontend with an object  
+  {
+    validated: boolean value,
+    message: 'Simple message',
+    data: receipe info
   }
+*/
+dbControllers.addFave = (req, res, next) => {
 
-  const cocktailKeys = ['name'];
-  const cocktailValues = req.body.name;
-  const queryStrInsertCocktail = `
-  INSERT into cocktails c ${cocktailKeys} VALUES($1)
-  `;
-  const queryStrInsertFaves = `
-  INSERT INTO faves f ${favesKeys} 
+  const favesValues = [req.params.id, req.body.cocktailId];
+  const queryStr = `
+  INSERT INTO faves (user_id, cocktail_id)
   VALUES($1, $2)
-  RETURNING *`;
+  RETURNING *
+  `;
 
-  db.query(queryStrInsertCocktail, cocktailValues)
+  db.query(queryStr, favesValues)
     .then((data) => {
-      res.locals.cocktailId = data.rows[0]['cocktail_id'];
-    })
-    .then(() => {
-      const favesKeys = ['user_id', 'cocktail_id'];
-      const favesValues = [req.params.id, res.locals.cocktailId];
-
-      db.query(
-        queryStrInsertFaves,
-        favesValues
-      )((data) => {
-        res.locals.fave = data.rows[0];
-        return next();
-      }).catch((err) => {
-        return next({
-          message: err.message,
-          log: 'error in addToFaves table part (the cocktail name does not already exist in the cocktails table and it was being added)',
-        });
-      });
+      res.locals.fave =   {
+        validated: true,
+        message: 'Drink has been added to favorites',
+        data: data.rows[0]
+      }
+      return next();
     })
     .catch((err) => {
       return next({
         message: err.message,
-        log: 'error in addRecipe middleware',
+        log: 'error in addToFaves table part (the cocktail name already exists in the cocktails table)',
       });
     });
-};
+}
+
+/*
+  Expect user_id from the client/frontend in-order to search the recipes database.
+  Response back to client/frontend with an object  
+  {
+    validated: boolean value,
+    message: 'Simple message',
+    data: receipe info
+  }
+*/
 
 dbControllers.getRecipes = (req, res, next) => {
-  const queryStr = `SELECT name, instructions, ingredient_list FROM recipes r
-  INNER JOIN users u 
+  const queryStr = `SELECT name, instructions, instructionList FROM recipes r
+  INNER JOIN users_login u 
   ON u.user_id = r.user_id
   WHERE u.user_id = $1
   `;
   const values = [req.params.id];
   db.query(queryStr, values)
     .then((data) => {
-      res.locals.recipes = data.rows;
+      res.locals.recipes = {
+        validated: true,
+        message: "Here're your recipes",
+        data: data.rows,
+      }
       return next();
     })
     .catch((err) => {
@@ -132,23 +137,38 @@ dbControllers.getRecipes = (req, res, next) => {
     });
 };
 
+/*
+  Expect 4 arguments from the client/frontend in-order to insert the new receipes into the database.
+  Response back to client/frontend with an object  
+  {
+    validated: boolean value,
+    message: 'Simple message',
+    data: receipe info
+  }
+*/
 dbControllers.addRecipe = (req, res, next) => {
-  const recipeKeys = ['user_id', 'name', 'instructions', 'ingredient_list'];
+  const recipeKeys = ['user_id', 'name', 'instructions', 'instructionList'];
   const recipeValues = [
     req.params.id,
     req.body.name,
-    req.body.instructions,
-    req.body.ingredients,
+    req.body.instructions, // should be an array?
+    req.body.ingredients, // should be an array?
   ];
   console.log(recipeValues);
+
   const queryStr = `
   INSERT into recipes (${recipeKeys})
   VALUES ($1, $2, $3, $4) 
   RETURNING *
   `;
+
   db.query(queryStr, recipeValues)
     .then((data) => {
-      res.locals.recipe = data.rows[0];
+      res.locals.recipe = {
+        validated: true,
+        message: 'Recipe has been added',
+        data: data.rows[0],
+      }
       return next();
     })
     .catch((err) => {

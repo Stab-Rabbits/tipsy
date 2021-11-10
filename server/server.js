@@ -5,13 +5,17 @@ const PORT = 3000;
 const drinksRouter = require('./router');
 const faveRouter = require('./faveRouter');
 const recipeRouter = require('./recipeRouter');
+const authRouter = require('./authRouter');
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use('/', authRouter);
 app.use('/', drinksRouter);
 app.use('/faves', faveRouter);
 app.use('/recipes', recipeRouter);
+
 
 
 // production build static serve..ask about get request
@@ -28,8 +32,6 @@ if (process.env.NODE_ENV === 'production') {
 app.use('*', (req, res) =>
   res.status(404).send("Go home Rebecca, you're drunk")
 );
-
-
 
 // universal error handler
 app.use((err, req, res, next) => {

@@ -10,7 +10,7 @@ obj.strMeasure[num] = corresponding measurement
 */
 
 function DrinkInfo({ drinkObj }) {
-  const id = localStorage.getItem('userId');
+  const id = drinkObj.idDrink; // user_id
   const [fav, setFav] = useState(false);
   // check if DrinkName is in favorites table
   useEffect(() => {
