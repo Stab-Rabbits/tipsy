@@ -3,9 +3,63 @@ const path = require('path');
 const fetch = require('node-fetch');
 const apiKey = 9973533;
 
+// import drink utils to get drinks from local file
+const drinkUtils = require('../../utils/drink.js');
+const { resourceLimits } = require('worker_threads');
+
 const dranks = {};
 
 // API GET REQUESTS
+
+dranks.handleSubmit2 = (req, res, next) => {
+  try{
+    console.log('handleSubmit2 reached in server');
+
+    // CASE 1: No category, no ingredients --> return random drink 
+    if (req.query.ingredients === '' && req.query.category === ''){
+      console.log('case 1');
+      // get random drink
+      let drink = drinkUtils.getRandomDrink(); 
+      res.locals.drinks = [drink]; 
+      return next(); 
+    }
+
+    // CASE 2: Only category 
+    if (req.query.ingredients === '' && req.query.category.length > 0){
+      console.log('case 2'); 
+      let drinks = drinkUtils.getDrinksByCategory(req.query.category);
+      // grab random drink, return it inside array because that's what the 
+      // frontend is expecting 
+      res.locals.drinks = [drinkUtils.pickRandomDrink(drinks)];
+      return next();
+    }
+
+    // CASE 3: Only ingredients 
+    if (req.query.ingredients.length > 0 && req.query.category === '') {
+      console.log('case 3');
+      let drinks = drinkUtils.getDrinksByIngredients(req.query.ingredients);
+      // grab random drink, return it inside array becayse that's what the 
+      // frontend is expecting 
+      res.locals.drinks = [drinkUtils.pickRandomDrink(drinks)];
+      return next();
+    }
+
+    // CASE 4: Both ingredients + category
+    if (req.query.ingredients.length > 0 && req.query.category.length > 0) {
+      let drinks = drinkUtils.getDrinksByCategoryAndIngredients(req.query.category, req.query.ingredients);
+      console.log(drinks); 
+      console.log('case 4');
+      res.locals.drinks = [drinkUtils.pickRandomDrink(drinks)];
+      return next(); 
+    }
+
+    return next(); 
+
+  } catch(error){
+    return next(error);
+  }
+}
+
 
 dranks.handleSubmit = (req, res, next) => {
   console.log('handleSubmit reached in server');
