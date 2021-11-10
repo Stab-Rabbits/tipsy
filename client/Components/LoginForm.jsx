@@ -14,29 +14,27 @@ function LoginForm() {
     
     // fetch is built into the browser
     fetch('/api/login', {
-      method: 'POST',
+      method: 'post',
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     })
     .then(response => response.json())
-    .then((data) => {
-      // check response format... need conditional if user is authenticated
-      
-
-      // if user is authenticated
-        console.log('logged in')
-        // set userId in local storage to persist through application
-        localStorage.setItem('userId', 1);
-        setMessage('Success!');
+    .then(data => {
+      //if user is authenticated
+      console.log(data)
+      if (data.validated) {
+        localStorage.setItem('userId', data.userId);
+        setMessage(data.message);
         // redirect user to home page
         window.location.href='http://localhost:8080/';
-      // if user is not authenticated
-        // setMessage('Invalid username/password. Please try again.');
-        // console.log('Invalid username/password');
+      } else {
+        setMessage(data.message);
+        console.log('Invalid username/password');
+      }
     })
-      .catch(function(e) {
+    .catch(function(e) {
         // set error message to render 
-        window.alert('Invalid Login');
+        window.alert('Something went wrong');
         console.error(e.message);
         return e;
 })

@@ -5,10 +5,13 @@ const authRouter = express.Router();
 //all endpoints are placeholders 
 authRouter.post('/signup', 
 authController.createUser,
-    (req, res) => res.status(200).json(res.locals.userCreated));
+    (req, res) => {
+      console.log('res.locals.userCreated', res.locals.userCreated);
+      return res.status(202).json(res.locals.userCreated);
+    })
 
-authRouter.get('/login',
+authRouter.post('/login',
 authController.verifyUser,
-    (req, res) => res.status(200).json(res.locals.userVerified)); 
+    (req, res) => res.status(200).json(res.locals.userVerified));
 
 module.exports = authRouter;

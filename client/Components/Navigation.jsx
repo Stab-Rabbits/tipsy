@@ -85,7 +85,7 @@ function Navigation() {
     logButton = 
     <Circle>
       <CircleNavHyperlink 
-          href="http://localhost:8080/"
+          href="http://localhost:8080"
           onClick={() => {
             logOut();
       }}>{ loginOrOut }</CircleNavHyperlink>

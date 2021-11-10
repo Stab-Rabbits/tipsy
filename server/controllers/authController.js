@@ -39,6 +39,7 @@ authController.createUser = async (req, res, next) => {
         message: 'Username already exist',
         userId: null,
       }
+
       return next();
     }
     console.log(`entered big "catch block" of createUser middleware`);
@@ -60,6 +61,7 @@ authController.createUser = async (req, res, next) => {
 authController.verifyUser = async (req, res, next) => {
     try{
       const {username, password} = req.body;
+      console.log(req.body)
       const query = `SELECT * FROM user_login WHERE username = '${username}'`
       const resFromDB = await db.query(query)
       if (!resFromDB.rows.length){
@@ -79,6 +81,7 @@ authController.verifyUser = async (req, res, next) => {
           message: 'Incorrect password, please try again.',
           userId: null
         }
+        console.log('not valid')
         return next();
       } else {
         res.locals.userVerified= {
@@ -86,6 +89,7 @@ authController.verifyUser = async (req, res, next) => {
           message: 'User sucessfully validated',
           userId: user.user_id
         }
+        console.log('valid')
         return next();
       }
     } catch(err) {

@@ -22,6 +22,7 @@ dbControllers.getFaves = (req, res, next) => {
 
   const queryStr = 'SELECT cocktail_id FROM faves WHERE user_id = $1'
   const values = [req.params.id];
+  console.log(req.params)
   db.query(queryStr, values)
     .then((data) => {
       res.locals.faves = {
