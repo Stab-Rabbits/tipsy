@@ -3,6 +3,24 @@ import { Link } from 'react-router-dom';
 import drinkUtils from '../../utils/drink.js'
 
 function MyList(props) {
+  function handleRecipeClick (name){
+    const body = {
+      id: localStorage.userId, 
+      name: name
+    }
+
+    // delete recipe
+    fetch(`/api/recipes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'Application/JSON'
+      },
+      body: JSON.stringify(body)
+    }).then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.log(err))
+  }
+
   const { userFavs, userRecipes, title } = props;
 
   // initalize list variables
@@ -19,7 +37,7 @@ function MyList(props) {
   } else if (userRecipiesList !== undefined && title.includes('Recipes')) {
     ListItems = userRecipiesList.map((element, index) => {
       return <li>
-              Name: {element.name}
+        Name: {element.name} <button onClick={() => handleRecipeClick(element.name)}>Delete</button>
               <ul> 
                   <li> Ingredients: {element.ingredients} </li>
                   <li> Instructions: {element.instructionlist} </li>
