@@ -4,6 +4,13 @@ const drinks = require('../drinks.js');
 
 const drinkUtils = {}; 
 
+drinkUtils.getDrinkNameFromID = (id) => {
+    // console.log(id); 
+    // console.log(drinks[0].idDrink); 
+    // console.log(drinks.filter(e => e.idDrink === id));
+    return drinks.filter(e => e.idDrink === id)[0].strDrink;
+}
+
 drinkUtils.getRandomDrink = () => {
     // return random drink from all drinks 
     return drinks[Math.floor(Math.random() * drinks.length)];
