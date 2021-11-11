@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import drinkUtils from '../../utils/drink.js'
 
 function MyList(props) {
+  // delete recipe from DB
   function handleRecipeClick (name){
     const body = {
       id: localStorage.userId, 
@@ -21,6 +22,27 @@ function MyList(props) {
       .catch(err => console.log(err))
   }
 
+  // Delete drink from User favs in DB
+  function handleFavClick(cocktailId) {
+    const body = {
+      id: localStorage.userId,
+      cocktailId: cocktailId
+    }
+
+    // delete recipe
+    fetch(`/api/faves/delete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'Application/JSON'
+      },
+      body: JSON.stringify(body)
+    }).then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.log(err))
+  }
+
+
+
   const { userFavs, userRecipes, title } = props;
 
   // initalize list variables
@@ -32,7 +54,7 @@ function MyList(props) {
   // --> display recipies 
   if (userFavsList !== undefined && title.includes('Drinks')) {
     ListItems = userFavsList.map((element, index) => {
-      return <li>{drinkUtils.getDrinkNameFromID(element.cocktail_id)}</li>
+      return <li>{drinkUtils.getDrinkNameFromID(element.cocktail_id)} <button onClick={() => handleFavClick(element.cocktail_id)}>Delete</button></li>
     })
   } else if (userRecipiesList !== undefined && title.includes('Recipes')) {
     ListItems = userRecipiesList.map((element, index) => {
