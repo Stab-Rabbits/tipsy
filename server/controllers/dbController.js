@@ -140,8 +140,8 @@ dbControllers.deleteFave = (req, res, next) => {
 */
 
 dbControllers.getRecipes = (req, res, next) => {
-  const queryStr = `SELECT name, instructions, instructionList FROM recipes r
-  INNER JOIN users_login u 
+  const queryStr = `SELECT name, instructionList, ingredients FROM recipes r
+  INNER JOIN user_login u 
   ON u.user_id = r.user_id
   WHERE u.user_id = $1
   `;

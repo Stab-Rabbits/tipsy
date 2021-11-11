@@ -5,15 +5,21 @@ import drinkUtils from '../../utils/drink.js'
 function MyList(props) {
   const { userFavs, userRecipes, title } = props;
 
-  let ListItems, List;
-  List = title.includes('Recipes') ? userRecipes : userFavs.data;
+  // initalize list variables
+  let ListItems;
+  let userRecipiesList = (userRecipes) ? userRecipes.data : [];
+  let userFavsList = (userFavs) ? userFavs.data : [];
 
-  if (List !== undefined && Array.isArray(List)) {
-    ListItems = List.map((element, index) => {
+  // if title includes recipies and we have recipies to display
+  // --> display recipies 
+  if (userFavsList !== undefined && title.includes('Drinks')) {
+    ListItems = userFavsList.map((element, index) => {
       return <li>{drinkUtils.getDrinkNameFromID(element.cocktail_id)}</li>
     })
-  } else if (!Array.isArray(List)) {
-    ListItems = <li>{List}</li>;
+  } else if (userRecipiesList !== undefined && title.includes('Recipes')) {
+    ListItems = userRecipiesList.map((element, index) => {
+      return <li>{element.name}</li>
+    })
   }
 
 
