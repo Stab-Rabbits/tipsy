@@ -1,18 +1,19 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
+import drinkUtils from '../../utils/drink.js'
 
 function MyList(props) {
   const { userFavs, userRecipes, title } = props;
 
   let ListItems, List;
-  List = title.includes('Recipes') ? userRecipes : userFavs;
+  List = title.includes('Recipes') ? userRecipes : userFavs.data;
 
   if (List !== undefined && Array.isArray(List)) {
     ListItems = List.map((element, index) => {
-      return <li>{element.name}</li>
+      return <li>{drinkUtils.getDrinkNameFromID(element.cocktail_id)}</li>
     })
   } else if (!Array.isArray(List)) {
-    ListItems = <li>{List.name}</li>;
+    ListItems = <li>{List}</li>;
   }
 
 
