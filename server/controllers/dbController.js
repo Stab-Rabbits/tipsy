@@ -25,6 +25,8 @@ dbControllers.getFaves = (req, res, next) => {
   console.log(req.params)
   db.query(queryStr, values)
     .then((data) => {
+      console.log('DB DATA:');
+      console.log(data);
       res.locals.faves = {
         validated: true,
         message: "Here're your favorite drinks",
