@@ -10,15 +10,21 @@ obj.strMeasure[num] = corresponding measurement
 */
 
 function DrinkInfo({ drinkObj }) {
-  const id = drinkObj.idDrink; // user_id
+  const id = localStorage.userId; // user_id
   const [fav, setFav] = useState(false);
   // check if DrinkName is in favorites table
   useEffect(() => {
     fetch(`/api/faves/${id}`)
       .then(res => res.json())
       .then(data => {
-        for (let elem of data) {
-          if (elem == drinkObj.strDrink) setFav(true);
+        console.log('data:');
+        console.log(data);
+        // elem: cocktail object 
+        for (let i=0; i<data.data.length; i++) {
+          if (data.data[i].cocktail_id === drinkObj.idDrink){
+            console.log('setting fav');
+            setFav(true);
+          }
         }
       })
   }, []);
