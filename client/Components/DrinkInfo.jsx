@@ -74,11 +74,38 @@ function DrinkInfo({ drinkObj }) {
   const handleClick = () => {
     if (fav == true) {
       // delete from favs table
-      //fetch();
+
+      // setup body for post request
+      const body = {
+        id: localStorage.userId,
+        cocktailId: drinkObj.idDrink
+      }
+      // add to favs table
+      fetch(`/api/faves/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'Application/JSON'
+        },
+        body: JSON.stringify(body)
+      }).then(res => res.text())
+        .then(data => console.log(data));
+    
       setFav(false);
     } else {
+      // setup body for post request
+      const body = {
+        id: localStorage.userId,
+        cocktailId: drinkObj.idDrink
+      }
       // add to favs table
-      //fetch();
+      fetch(`/api/faves`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'Application/JSON'
+        },
+        body: JSON.stringify(body)
+      }).then(res => res.text())
+        .then(data => console.log(data));
       setFav(true);
     }
   }

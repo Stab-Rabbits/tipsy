@@ -81,7 +81,7 @@ dbControllers.findCocktail = (req, res, next) => {
 */
 dbControllers.addFave = (req, res, next) => {
 
-  const favesValues = [req.params.id, req.body.cocktailId];
+  const favesValues = [req.body.id, req.body.cocktailId];
   const queryStr = `
   INSERT INTO faves (user_id, cocktail_id)
   VALUES($1, $2)
@@ -101,6 +101,30 @@ dbControllers.addFave = (req, res, next) => {
       return next({
         message: err.message,
         log: 'error in addToFaves table part (the cocktail name already exists in the cocktails table)',
+      });
+    });
+}
+
+dbControllers.deleteFave = (req, res, next) => {
+
+  const values = [req.body.id, req.body.cocktailId];
+  const queryStr = `
+  DELETE FROM faves WHERE user_id = $1 AND cocktail_id = $2
+  `;
+
+  db.query(queryStr, values)
+    .then((data) => {
+      res.locals.msg = {
+        validated: true,
+        message: 'Drink has been deleted from your favorites',
+        data: data.rows[0]
+      }
+      return next();
+    })
+    .catch((err) => {
+      return next({
+        message: err.message,
+        log: 'error in deleteFave',
       });
     });
 }
