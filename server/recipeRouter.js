@@ -10,4 +10,8 @@ router.post('/:id', dbController.addRecipe, (req, res) =>
   res.status(200).json(res.locals.recipes)
 );
 
+router.post('/', dbController.deleteRecipe, (req, res) =>
+  res.status(200).json(res.locals.deleteRecipeMsg)
+);
+
 module.exports = router;

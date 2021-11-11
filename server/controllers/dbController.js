@@ -129,6 +129,30 @@ dbControllers.deleteFave = (req, res, next) => {
     });
 }
 
+dbControllers.deleteRecipe = (req, res, next) => {
+
+  const values = [req.body.id, req.body.name];
+  const queryStr = `
+  DELETE FROM recipes WHERE user_id = $1 AND name = $2
+  `;
+
+  db.query(queryStr, values)
+    .then((data) => {
+      res.locals.deleteRecipeMsg = {
+        validated: true,
+        message: 'Recipe has been deleted from your favorites',
+        data: data.rows[0]
+      }
+      return next();
+    })
+    .catch((err) => {
+      return next({
+        message: err.message,
+        log: 'error in deleteRecipe',
+      });
+    });
+}
+
 /*
   Expect user_id from the client/frontend in-order to search the recipes database.
   Response back to client/frontend with an object  
@@ -173,7 +197,7 @@ dbControllers.getRecipes = (req, res, next) => {
   }
 */
 dbControllers.addRecipe = (req, res, next) => {
-  const recipeKeys = ['user_id', 'name', 'instructions', 'instructionList'];
+  const recipeKeys = ['user_id', 'name', 'instructionList', 'ingredients'];
   const recipeValues = [
     req.params.id,
     req.body.name,
