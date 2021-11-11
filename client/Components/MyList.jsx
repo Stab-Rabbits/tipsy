@@ -18,7 +18,14 @@ function MyList(props) {
     })
   } else if (userRecipiesList !== undefined && title.includes('Recipes')) {
     ListItems = userRecipiesList.map((element, index) => {
-      return <li>{element.name}</li>
+      return <li>
+              Name: {element.name}
+              <ul> 
+                  <li> Ingredients: {element.ingredients} </li>
+                  <li> Instructions: {element.instructionlist} </li>
+              </ul> 
+            </li>
+
     })
   }
 
